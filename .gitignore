@@ -2,3 +2,4 @@ __pycache__
 *.png
 log.txt
 debug_images
+debug.log
