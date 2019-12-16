@@ -85,6 +85,7 @@ if __name__ == '__main__':
     elif sys.argv[1] == '2':
         from config import conf2 as conf
         subprocess.call('adb connect 127.0.0.1:62001', shell=True)
+        subprocess.call('adb devices', shell=True)
 
     browser = webdriver.Chrome(chromedriver_path)
     browser.get(search_engine)
