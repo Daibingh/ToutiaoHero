@@ -9,6 +9,6 @@ class conf1(object):
 
 class conf2(object):
     """模拟器配置"""
-    roi = (48, 245, 625, 650)  # ！
+    roi = (48, 200, 625, 550)  # ！
     img_folder = 'C:/Users/hdb/Nox_share/ImageShare/'
     cmd = 'adb shell screencap -p /mnt/shared/Image/screen.png'
