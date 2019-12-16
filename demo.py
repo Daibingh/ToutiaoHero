@@ -4,17 +4,20 @@ import subprocess
 import time
 import cv2
 import numpy as np
-from utils import run_time, ocr
+from utils import run_time, ocr, Logger
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 import PyHook3 as pyHook
 import pythoncom
 import sys
+import shutil
+import uuid
 
 
 hot_key = "F2"
 search_engine = 'http://www.baidu.com'
 chromedriver_path = './chromedriver_win32/chromedriver.exe'
+log = Logger('log.txt')
 
 @run_time
 def screencap():
@@ -39,7 +42,13 @@ def process_res(res):
     return text[ind+1:]
 
 
+def move_image(dist_folder, uid):
+    shutil.move(conf.img_folder+'screen.png', dist_folder+uid+'.png')  # 移动文件
+    shutil.move(conf.img_folder+'screen_croped.png', dist_folder+uid+'_croped.png')
+
+
 def main():
+    uid = uuid.uuid4().hex
     ret = screencap()
     res = ''
     if ret != 0:
@@ -50,12 +59,18 @@ def main():
         res = ocr(conf.img_folder+'screen_croped.png')
         res = process_res(res)
         print(">>>> 搜索的关键词是：{}".format(res))
+        log.info("{}: {}".format(uid, res))
         elem = browser.find_element_by_id("kw")
         elem.clear()
         elem.send_keys(res)
         elem.send_keys(Keys.RETURN)
     except Exception as e:
         print('\033[1;31m---- parsing error!\033[0m')
+        log.info('---- parsing error!')
+    try:
+        move_image('debug_images/', uid)
+    except Exception as e:
+        pass 
 
 
 def test():
