@@ -1,0 +1,9 @@
+[1215/160053.370:ERROR:process_reader_win.cc(123)] NtOpenThread: {无法访问} 过程已请求访问一对象，但未给访问权限。 (0xc0000022)
+[1215/160053.371:ERROR:exception_snapshot_win.cc(98)] thread ID 4784 not found in process
+[1215/160358.888:ERROR:process_reader_win.cc(123)] NtOpenThread: {无法访问} 过程已请求访问一对象，但未给访问权限。 (0xc0000022)
+[1215/160358.889:ERROR:exception_snapshot_win.cc(98)] thread ID 4908 not found in process
+[1215/161104.304:ERROR:process_reader_win.cc(123)] NtOpenThread: {无法访问} 过程已请求访问一对象，但未给访问权限。 (0xc0000022)
+[1215/161104.304:ERROR:exception_snapshot_win.cc(98)] thread ID 14960 not found in process
+[1215/174125.944:ERROR:process_reader_win.cc(123)] NtOpenThread: {无法访问} 过程已请求访问一对象，但未给访问权限。 (0xc0000022)
+[1215/174125.945:ERROR:exception_snapshot_win.cc(98)] thread ID 12192 not found in process
+[1215/183240.948:ERROR:prune_crash_reports.cc(34)] PruneCrashReportDatabase: Failed to get pending reports
