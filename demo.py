@@ -16,7 +16,6 @@ from wxpy import *
 import traceback
 
 
-friend_name = '姐'
 hot_key = "F2"
 search_engine = 'http://www.baidu.com'
 chromedriver_path = './chromedriver_win32/chromedriver.exe'
@@ -101,7 +100,7 @@ def main():
         log.info("{}: 百度打分 {}".format(uid, opt_score))
         log.info("{}: 搜狗打分 {}".format(uid, opt_score_2))
 
-        my_friend.send(msg)
+        group.send(msg)
 
     except Exception as e:
         print(e)
@@ -160,7 +159,7 @@ def test2():
     print(">>>> 搜狗推荐答案: {}, 备选(否定题目): {}".format(max(opt_score_2, key=opt_score_2.get), min(opt_score_2, key=opt_score_2.get)))
     print('------------------------------------------------------')
 
-    my_friend.send(msg)
+    group.send(msg)
 
 
 def onKeyboardEvent(event):
@@ -193,9 +192,9 @@ if __name__ == '__main__':
 
     # 初始化机器人，扫码登陆
     bot = Bot()
-    # 搜索名称含有 "游否" 的男性深圳好友
-    my_friend = bot.friends().search(friend_name)[0]
-    print(my_friend)
+    # my_friend = bot.friends().search('姐')[0]
+    group = bot.groups().search('答题')[0]
+    print(group)
 
     # 创建管理器
     hm = pyHook.HookManager()
