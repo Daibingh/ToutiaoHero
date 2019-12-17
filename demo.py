@@ -49,17 +49,18 @@ def move_image(dist_folder, uid):
     shutil.move(conf.img_folder+'screen.png', dist_folder+uid+'.png')  # 移动文件
     shutil.move(conf.img_folder+'screen_croped.png', dist_folder+uid+'_croped.png')
 
-
+@run_time
 def baidu_score(browser, opts):
     res_list = browser.find_elements_by_css_selector("div.result.c-container")
     text = ' '.join([t.text.split('...')[0] for t in res_list]).replace('\n', ' ')
     return dict(zip(opts, map(lambda t: text.count(t), opts)))
 
+@run_time
 def sogou_score(browser, opts):
     text = browser.find_element_by_class_name('results').text
     return dict(zip(opts, map(lambda t: text.count(t), opts)))
 
-
+@run_time
 def main():
     uid = uuid.uuid4().hex
     ret = screencap()
