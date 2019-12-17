@@ -14,6 +14,7 @@ import shutil
 import uuid
 from wxpy import *
 import traceback
+import argparse
 
 
 hot_key = "F2"
@@ -85,12 +86,6 @@ def main():
         opt_score = baidu_score(browser, search_text.split('?')[-1].strip().split(' '))
         opt_score_2 = sogou_score(browser_2, search_text.split('?')[-1].strip().split(' '))
 
-
-        msg = "百度推荐答案: {}, 备选(否定题目): {}\n搜狗推荐答案: {}, 备选(否定题目): {}".format(
-        max(opt_score, key=opt_score.get), min(opt_score, key=opt_score.get),
-        max(opt_score_2, key=opt_score_2.get), min(opt_score_2, key=opt_score_2.get)
-        )
-
         print('>>>> 百度打分: {}'.format(opt_score))
         print('>>>> 搜狗打分: {}'.format(opt_score_2))
         print('\n')
@@ -100,7 +95,12 @@ def main():
         log.info("{}: 百度打分 {}".format(uid, opt_score))
         log.info("{}: 搜狗打分 {}".format(uid, opt_score_2))
 
-        group.send(msg)
+        if F.use_wx:
+            msg = "百度推荐答案: {}, 备选(否定题目): {}\n搜狗推荐答案: {}, 备选(否定题目): {}".format(
+                    max(opt_score, key=opt_score.get), min(opt_score, key=opt_score.get),
+                    max(opt_score_2, key=opt_score_2.get), min(opt_score_2, key=opt_score_2.get)
+                    )
+            group.send(msg)
 
     except Exception as e:
         print(e)
@@ -147,11 +147,6 @@ def test2():
     opt_score = baidu_score(browser, search_text.split('?')[-1].strip().split(' '))
     opt_score_2 = sogou_score(browser_2, search_text.split('?')[-1].strip().split(' '))
 
-    msg = "百度推荐答案: {}, 备选(否定题目): {}\n搜狗推荐答案: {}, 备选(否定题目): {}".format(
-        max(opt_score, key=opt_score.get), min(opt_score, key=opt_score.get),
-        max(opt_score_2, key=opt_score_2.get), min(opt_score_2, key=opt_score_2.get)
-        )
-
     print('>>>> 百度打分: {}'.format(opt_score))
     print('>>>> 搜狗打分: {}'.format(opt_score_2))
     print('\n')
@@ -159,14 +154,20 @@ def test2():
     print(">>>> 搜狗推荐答案: {}, 备选(否定题目): {}".format(max(opt_score_2, key=opt_score_2.get), min(opt_score_2, key=opt_score_2.get)))
     print('------------------------------------------------------')
 
-    group.send(msg)
+    if F.use_wx:
+        msg = "百度推荐答案: {}, 备选(否定题目): {}\n搜狗推荐答案: {}, 备选(否定题目): {}".format(
+                max(opt_score, key=opt_score.get), min(opt_score, key=opt_score.get),
+                max(opt_score_2, key=opt_score_2.get), min(opt_score_2, key=opt_score_2.get)
+                )
+        group.send(msg)
 
 
 def onKeyboardEvent(event):
     if event.Key == 'F2':
-        # test()
-        test2()
-        # main()
+        if F.debug:
+            test2()
+        else:
+            main()
     elif event.Key == 'Q':
         browser.quit()
         browser_2.quit()
@@ -176,13 +177,20 @@ def onKeyboardEvent(event):
 
 if __name__ == '__main__':
 
-    if sys.argv[1] == '1':
+    args = argparse.ArgumentParser()
+    args.add_argument('--use_phone', action='store_true')
+    args.add_argument('--debug', action='store_true')
+    args.add_argument('--use_wx', action='store_true')
+
+    F = args.parse_args()
+
+    if F.use_phone:
         from config import conf1 as conf  # 手机配置
         subprocess.call('adb devices', shell=True)
-    elif sys.argv[1] == '2':
+    else:
         from config import conf2 as conf
         subprocess.call('adb connect 127.0.0.1:62001', shell=True)
-        subprocess.call('adb devices', shell=True)
+        subprocess.call('adb devices', shell=True)        
 
     browser = webdriver.Chrome(chromedriver_path)
     browser.get(search_engine)
@@ -190,11 +198,12 @@ if __name__ == '__main__':
     browser_2 = webdriver.Chrome(chromedriver_path)
     browser_2.get('https://www.sogou.com/')
 
-    # 初始化机器人，扫码登陆
-    bot = Bot()
-    # my_friend = bot.friends().search('姐')[0]
-    group = bot.groups().search('答题')[0]
-    print(group)
+    if F.use_wx:
+        # 初始化机器人，扫码登陆
+        bot = Bot()
+        # my_friend = bot.friends().search('姐')[0]
+        group = bot.groups().search('答题')[0]
+        print(group)
 
     # 创建管理器
     hm = pyHook.HookManager()
