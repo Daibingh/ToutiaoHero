@@ -12,8 +12,11 @@ import pythoncom
 import sys
 import shutil
 import uuid
+from wxpy import *
+import traceback
 
 
+friend_name = '姐'
 hot_key = "F2"
 search_engine = 'http://www.baidu.com'
 chromedriver_path = './chromedriver_win32/chromedriver.exe'
@@ -52,6 +55,10 @@ def baidu_score(browser, opts):
     text = ' '.join([t.text.split('...')[0] for t in res_list]).replace('\n', ' ')
     return dict(zip(opts, map(lambda t: text.count(t), opts)))
 
+def sogou_score(browser, opts):
+    text = browser.find_element_by_class_name('results').text
+    return dict(zip(opts, map(lambda t: text.count(t), opts)))
+
 
 def main():
     uid = uuid.uuid4().hex
@@ -65,23 +72,46 @@ def main():
         search_text = process_res(ocr_res)
         print(">>>> 搜索的关键词是：{}".format(search_text))
         log.info("{}: {}".format(uid, search_text))
+
         elem = browser.find_element_by_id("kw")
+        browser_2.get('https://www.sogou.com/')
+        elem_2 = browser_2.find_element_by_id("query")
         elem.clear()
+        elem_2.clear()
         elem.send_keys(search_text)
+        elem_2.send_keys(search_text)
         elem.send_keys(Keys.RETURN)
-        time.sleep(0.2)
+        elem_2.send_keys(Keys.RETURN)
+        time.sleep(1)
         opt_score = baidu_score(browser, search_text.split('?')[-1].strip().split(' '))
+        opt_score_2 = sogou_score(browser_2, search_text.split('?')[-1].strip().split(' '))
+
+
+        msg = "百度推荐答案: {}, 备选(否定题目): {}\n搜狗推荐答案: {}, 备选(否定题目): {}".format(
+        max(opt_score, key=opt_score.get), min(opt_score, key=opt_score.get),
+        max(opt_score_2, key=opt_score_2.get), min(opt_score_2, key=opt_score_2.get)
+        )
+
         print('>>>> 百度打分: {}'.format(opt_score))
+        print('>>>> 搜狗打分: {}'.format(opt_score_2))
+        print('\n')
         print(">>>> 百度推荐答案: {}, 备选(否定题目): {}".format(max(opt_score, key=opt_score.get), min(opt_score, key=opt_score.get)))
+        print(">>>> 搜狗推荐答案: {}, 备选(否定题目): {}".format(max(opt_score_2, key=opt_score_2.get), min(opt_score_2, key=opt_score_2.get)))
         print('------------------------------------------------------')
         log.info("{}: 百度打分 {}".format(uid, opt_score))
+        log.info("{}: 搜狗打分 {}".format(uid, opt_score_2))
+
+        my_friend.send(msg)
+
     except Exception as e:
-        print('\033[1;31m---- parsing error!\033[0m')
-        log.info('{}: parsing error!'.format(uid))
+        print(e)
+        print(traceback.format_exc())
+        log.info('{}: {}'.format(uid, e))
     try:
         move_image('debug_images/', uid)
     except Exception as e:
-        pass 
+        print(e)
+        print(traceback.format_exc()) 
 
 
 def test():
@@ -104,15 +134,33 @@ def test2():
                     ]
     search_text = np.random.choice(search_text_list)
     print(">>>> 搜索的关键词是：{}".format(search_text))
+
     elem = browser.find_element_by_id("kw")
+    browser_2.get('https://www.sogou.com/')
+    elem_2 = browser_2.find_element_by_id("query")
     elem.clear()
+    elem_2.clear()
     elem.send_keys(search_text)
+    elem_2.send_keys(search_text)
     elem.send_keys(Keys.RETURN)
+    elem_2.send_keys(Keys.RETURN)
     time.sleep(1)
     opt_score = baidu_score(browser, search_text.split('?')[-1].strip().split(' '))
+    opt_score_2 = sogou_score(browser_2, search_text.split('?')[-1].strip().split(' '))
+
+    msg = "百度推荐答案: {}, 备选(否定题目): {}\n搜狗推荐答案: {}, 备选(否定题目): {}".format(
+        max(opt_score, key=opt_score.get), min(opt_score, key=opt_score.get),
+        max(opt_score_2, key=opt_score_2.get), min(opt_score_2, key=opt_score_2.get)
+        )
+
     print('>>>> 百度打分: {}'.format(opt_score))
+    print('>>>> 搜狗打分: {}'.format(opt_score_2))
+    print('\n')
     print(">>>> 百度推荐答案: {}, 备选(否定题目): {}".format(max(opt_score, key=opt_score.get), min(opt_score, key=opt_score.get)))
+    print(">>>> 搜狗推荐答案: {}, 备选(否定题目): {}".format(max(opt_score_2, key=opt_score_2.get), min(opt_score_2, key=opt_score_2.get)))
     print('------------------------------------------------------')
+
+    my_friend.send(msg)
 
 
 def onKeyboardEvent(event):
@@ -122,6 +170,7 @@ def onKeyboardEvent(event):
         # main()
     elif event.Key == 'Q':
         browser.quit()
+        browser_2.quit()
         sys.exit()
     return True
 
@@ -138,6 +187,15 @@ if __name__ == '__main__':
 
     browser = webdriver.Chrome(chromedriver_path)
     browser.get(search_engine)
+
+    browser_2 = webdriver.Chrome(chromedriver_path)
+    browser_2.get('https://www.sogou.com/')
+
+    # 初始化机器人，扫码登陆
+    bot = Bot()
+    # 搜索名称含有 "游否" 的男性深圳好友
+    my_friend = bot.friends().search(friend_name)[0]
+    print(my_friend)
 
     # 创建管理器
     hm = pyHook.HookManager()
