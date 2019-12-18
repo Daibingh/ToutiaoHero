@@ -27,6 +27,15 @@ class Logger:
     def info(self, msg):
         self._logger.info(msg)
 
+    @property
+    def disabled(self):
+        return self._logger.disabled
+
+    @disabled.setter
+    def disabled(self, b):
+        self._logger.disabled = b
+    
+
 
 def run_time(func):
     def wrapper(*args, **kw):
