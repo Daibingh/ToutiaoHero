@@ -66,6 +66,8 @@ def sogou_score(browser, opts):
 
 @run_time
 def main():
+    print(chr(27) + "[2J")  # clear terminal
+
     uid = uuid.uuid4().hex
     ret = screencap()
     if ret != 0:
@@ -114,9 +116,10 @@ def main():
         print(traceback.format_exc())
 
 
-
 @run_time
 def test():
+    print(chr(27) + "[2J")
+
     search_text_list = ['从1948年的第一套人民币到如今的第五套人民币,都是由哪家银行统一发行的? 中国银行 华北银行 中国人民银行',
                     # "进博会吉祥物叫什么名字? 招财 进宝 来福",
                     # "澳门回归时唱响的《七子之歌》的词作者是 哪个诗歌流派的? 朦胧派 新月派 湖畔派",
