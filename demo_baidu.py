@@ -37,8 +37,8 @@ def crop_img(img_file):
     x, y, w, h = conf.roi
     img = img[y:y+h,x:x+w]
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    # _, binary = cv2.threshold(gray, 158, 255, cv2.THRESH_BINARY)
-    binary = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 15, 12)
+    _, binary = cv2.threshold(gray, 158, 255, cv2.THRESH_BINARY)
+    # binary = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 15, 12)
     _, buf = cv2.imencode(".png", binary)
     return bytes(buf)
 
@@ -178,7 +178,7 @@ if __name__ == '__main__':
     args.add_argument('--use_phone', action='store_true')
     args.add_argument('--debug', action='store_true')
     args.add_argument('--use_wx', action='store_true')
-    args.add_argument('--wait_time', type=float, default=.5)
+    args.add_argument('--wait_time', type=float, default=.8)
     args.add_argument('--no_log', action='store_true')
     args.add_argument('--no_save_img', action='store_true')
 
