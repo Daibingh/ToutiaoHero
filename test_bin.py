@@ -12,15 +12,20 @@ def crop_img(folder):
     img = img[y:y+h,x:x+w]
     return cv2.imwrite(folder+'screen_croped.png', img)
 
+def crop_ocr(img_file):
+    cmd = './bin/crop_ocr {}'.format(img_file)
+    p = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    return json.loads(p.stdout.read())['words_result']
+
 if __name__ == '__main__':
     t0 = time.time()
-    ret = subprocess.call('./bin/crop_ocr screen.png screen_croped.png result.json')
-    with open('result.json') as f:
-        res = json.load(f)
-        print(res)
+    p = subprocess.Popen('./bin/crop_ocr screen.png', stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    j = json.loads(p.stdout.read())
+    print(j)
     print(time.time()-t0)
 
     t0 = time.time()
     crop_img('./')
     ocr_res = ocr('screen_croped.png')
+    print(ocr_res)
     print(time.time()-t0)

@@ -4,7 +4,7 @@ import subprocess
 import time
 import cv2
 import numpy as np
-from utils import run_time, ocr, Logger
+from utils import run_time, ocr, ocr2, Logger, crop_ocr
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
@@ -23,6 +23,7 @@ import argparse
 hot_key = "F2"
 search_engine = 'http://www.baidu.com'
 chromedriver_path = './chromedriver_win32/chromedriver.exe'
+thresh = 158
 
 # @run_time
 def screencap():
@@ -30,13 +31,15 @@ def screencap():
     ret = subprocess.call(cmd, shell=True, timeout=3)
     return ret
 
-# @run_time
-def crop_img(folder):
-    img_file = folder+'screen.png'
+@run_time
+def crop_img(img_file):
     img = cv2.imread(img_file)
     x, y, w, h = conf.roi
     img = img[y:y+h,x:x+w]
-    return cv2.imwrite(folder+'screen_croped.png', img)
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    _, binary = cv2.threshold(gray, 158, 255, cv2.THRESH_BINARY)
+    _, buf = cv2.imencode(".png", binary)
+    return bytes(buf)
 
 # @run_time
 def process_res(res):
@@ -49,7 +52,6 @@ def process_res(res):
 
 def move_image(dist_folder, uid):
     shutil.move(conf.img_folder+'screen.png', dist_folder+uid+'.png')  # 移动文件
-    shutil.move(conf.img_folder+'screen_croped.png', dist_folder+uid+'_croped.png')
 
 # @run_time
 def baidu_score(browser, opts):
@@ -70,10 +72,11 @@ def main():
         print('\033[1;31m---- adb offline!\033[0m')
         return
     try:
-        crop_img(conf.img_folder)
-        ocr_res = ocr(conf.img_folder+'screen_croped.png')
+        img_bytes = crop_img(conf.img_folder+'screen.png')
+        ocr_res = ocr2(img_bytes)
         search_text = process_res(ocr_res)
-        que, opts = search_text.split('?')
+        sp = search_text.split('?')
+        que, opts = sp[0], sp[-1]
         search_text = que.replace(' ', '') + '?' + opts
         print(">>>> 搜索的关键词是: {}".format(search_text))
         log.info("{}: 搜索关键词 {}".format(uid, search_text))
@@ -84,7 +87,7 @@ def main():
         elem.send_keys(Keys.RETURN)
 
         time.sleep(F.wait_time)
-        WebDriverWait(browser,1,0.1).until(EC.presence_of_all_elements_located((By.CSS_SELECTOR,"div.result.c-container")))
+        WebDriverWait(browser,2,0.1).until(EC.presence_of_all_elements_located((By.CSS_SELECTOR,"div.result.c-container")))
 
         opt_score = baidu_score(browser, opts.strip().split(' '))
         baidu_ans, baidu_ans_bak = max(opt_score, key=opt_score.get), min(opt_score, key=opt_score.get)
@@ -108,13 +111,13 @@ def main():
             move_image('debug_images/', uid)
     except Exception as e:
         print('----', e)
-        print(traceback.format_exc()) 
+        print(traceback.format_exc())
 
 
 
 @run_time
 def test():
-    search_text_list = ['从1948年的第一套人民币到如今的第五套人民 币,都是由哪家银行统一发行的? 中国银行 华北银行 中国人民银行',
+    search_text_list = ['从1948年的第一套人民币到如今的第五套人民币,都是由哪家银行统一发行的? 中国银行 华北银行 中国人民银行',
                     # "进博会吉祥物叫什么名字? 招财 进宝 来福",
                     # "澳门回归时唱响的《七子之歌》的词作者是 哪个诗歌流派的? 朦胧派 新月派 湖畔派",
                     # '小明来到北京大兴国际机场的餐厅用餐时,发现? 价高质低 同质同价 同质价高',
@@ -123,7 +126,7 @@ def test():
                     # '中国女排目前已经十度成为世界冠军,其中包 含了奥运会、世界杯和哪项赛事? 国际排联大冠军杯 世俱杯 世锦赛',
                     '动画片《葫芦娃》中,五娃的技能是? 隐身 吐火 吐水',
                     '小提琴有4根弦,那么大提琴有几根弦? 4 5 6',
-                    '小说《天龙八部》中,虛竹的配偶梦姑是哪 国的公主? 西夏 大理 吐蕃',
+                    '小说《天龙八部》中,虛竹的配偶梦姑是哪国的公主? 西夏 大理 吐蕃',
                     # '近年来备受热捧的“脏脏包"是哪一类网红商 品? 食物 箱包 洁具',
                     # '00后网络聊天时经常使用的缩写“XSWL"是在 表达哪种情绪? 高兴 生气 悲伤',
                     # '80年代风靡全国的“燕舞,燕舞,一曲歌来 片情″是哪种商品的广告歌曲? 收录机 电视机 卡拉OK机'
@@ -139,7 +142,7 @@ def test():
     elem.send_keys(Keys.RETURN)
 
     time.sleep(F.wait_time)
-    WebDriverWait(browser,1,0.1).until(EC.presence_of_all_elements_located((By.CSS_SELECTOR,"div.result.c-container")))
+    WebDriverWait(browser,2,0.1).until(EC.presence_of_all_elements_located((By.CSS_SELECTOR,"div.result.c-container")))
 
     opt_score = baidu_score(browser, opts.strip().split(' '))
     baidu_ans, baidu_ans_bak = max(opt_score, key=opt_score.get), min(opt_score, key=opt_score.get)
