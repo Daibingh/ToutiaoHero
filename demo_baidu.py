@@ -37,7 +37,8 @@ def crop_img(img_file):
     x, y, w, h = conf.roi
     img = img[y:y+h,x:x+w]
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    _, binary = cv2.threshold(gray, 158, 255, cv2.THRESH_BINARY)
+    # _, binary = cv2.threshold(gray, 158, 255, cv2.THRESH_BINARY)
+    binary = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 15, 12)
     _, buf = cv2.imencode(".png", binary)
     return bytes(buf)
 
@@ -77,8 +78,7 @@ def main():
         img_bytes = crop_img(conf.img_folder+'screen.png')
         ocr_res = ocr2(img_bytes)
         search_text = process_res(ocr_res)
-        sp = search_text.split('?')
-        que, opts = sp[0], sp[-1]
+        que, opts = search_text.split('?')
         search_text = que.replace(' ', '') + '?' + opts
         print(">>>> 搜索的关键词是: {}".format(search_text))
         log.info("{}: 搜索关键词 {}".format(uid, search_text))
