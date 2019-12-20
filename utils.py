@@ -4,6 +4,7 @@ import time
 from aip import AipOcr
 import logging
 import subprocess
+import requests as R
 import json
 
 
@@ -78,3 +79,28 @@ def crop_ocr(img_file):
     cmd = './bin/crop_ocr {}'.format(img_file)
     p = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     return json.loads(p.stdout.read())['words_result']
+
+def parse_json(j):
+    text = ''
+    for d in j['data']:
+        try:
+            text += d['display']['summary']['text'] + '\n'
+        except:
+            pass
+    return text
+
+@run_time
+def toutiao_score(search_text):
+    opts = search_text.split('?')[-1].strip().split(' ')
+    headers = {
+    "User-Agent": 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.79 Safari/537.36'    }
+
+    params = {
+            "keyword": search_text,
+            'format': 'json',
+            'offset': 0,
+            'count': 20,
+    }
+    res = R.get('https://www.toutiao.com/api/search/content/', params=params, headers=headers, timeout=2)
+    text = parse_json(res.json())
+    return {t: text.count(t) for t in opts}

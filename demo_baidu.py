@@ -4,7 +4,7 @@ import subprocess
 import time
 import cv2
 import numpy as np
-from utils import run_time, ocr, ocr2, Logger, crop_ocr
+from utils import run_time, ocr, ocr2, Logger, crop_ocr, toutiao_score
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
@@ -88,7 +88,11 @@ def main():
         elem.send_keys(search_text)
         elem.send_keys(Keys.RETURN)
 
-        time.sleep(F.wait_time)
+        if F.use_toutiao:
+            opt_score2 = toutiao_score(search_text)
+            toutiao_ans, toutiao_ans_bak = max(opt_score2, key=opt_score2.get), min(opt_score2, key=opt_score2.get)
+        else:
+            time.sleep(F.wait_time)
         WebDriverWait(browser,2,0.1).until(EC.presence_of_all_elements_located((By.CSS_SELECTOR,"div.result.c-container")))
 
         opt_score = baidu_score(browser, opts.strip().split(' '))
@@ -96,12 +100,19 @@ def main():
 
         print('>>>> 百度打分: {}'.format(opt_score))
         log.info("{}: 百度打分 {}".format(uid, opt_score))
+        if F.use_toutiao:
+            print('>>>> 头条打分: {}'.format(opt_score2))
+            log.info("{}: 头条打分 {}".format(uid, opt_score2))
         print('\n')
         print(">>>> 百度推荐答案: {}, 备选(否定题目): {}".format(baidu_ans, baidu_ans_bak))
+        if F.use_toutiao:
+            print(">>>> 头条推荐答案: {}, 备选(否定题目): {}".format(toutiao_ans, toutiao_ans_bak))
         print('------------------------------------------------------')
 
         if F.use_wx:
             msg = "百度推荐答案: {}, 备选(否定题目): {}".format(baidu_ans, baidu_ans_bak)
+            if F.use_toutiao:
+                meg += "\n头条推荐答案: {}, 备选(否定题目): {}".format(toutiao_ans, toutiao_ans_bak)
             group.send(msg)
 
     except Exception as e:
@@ -145,19 +156,30 @@ def test():
     elem.send_keys(search_text)
     elem.send_keys(Keys.RETURN)
 
-    time.sleep(F.wait_time)
+    if F.use_toutiao:
+        opt_score2 = toutiao_score(search_text)
+        toutiao_ans, toutiao_ans_bak = max(opt_score2, key=opt_score2.get), min(opt_score2, key=opt_score2.get)
+    else:
+        time.sleep(F.wait_time)
+
     WebDriverWait(browser,2,0.1).until(EC.presence_of_all_elements_located((By.CSS_SELECTOR,"div.result.c-container")))
 
     opt_score = baidu_score(browser, opts.strip().split(' '))
     baidu_ans, baidu_ans_bak = max(opt_score, key=opt_score.get), min(opt_score, key=opt_score.get)
 
     print('>>>> 百度打分: {}'.format(opt_score))
+    if F.use_toutiao:
+        print('>>>> 头条打分: {}'.format(opt_score2))
     print('\n')
     print(">>>> 百度推荐答案: {}, 备选(否定题目): {}".format(baidu_ans, baidu_ans_bak))
+    if F.use_toutiao:
+        print(">>>> 头条推荐答案: {}, 备选(否定题目): {}".format(toutiao_ans, toutiao_ans_bak))
     print('------------------------------------------------------')
 
     if F.use_wx:
         msg = "百度推荐答案: {}, 备选(否定题目): {}".format(baidu_ans, baidu_ans_bak)
+        if F.use_toutiao:
+            meg += "\n头条推荐答案: {}, 备选(否定题目): {}".format(toutiao_ans, toutiao_ans_bak)
         group.send(msg)
 
 
@@ -182,6 +204,7 @@ if __name__ == '__main__':
     args.add_argument('--wait_time', type=float, default=.8)
     args.add_argument('--no_log', action='store_true')
     args.add_argument('--no_save_img', action='store_true')
+    args.add_argument('--use_toutiao', action='store_true')
 
     F = args.parse_args()
 
