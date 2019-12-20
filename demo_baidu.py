@@ -219,9 +219,15 @@ if __name__ == '__main__':
     else:
         from config import conf2 as conf
         subprocess.call('adb connect 127.0.0.1:62001', shell=True)
-        subprocess.call('adb devices', shell=True)        
+        subprocess.call('adb devices', shell=True)
 
-    browser = webdriver.Chrome(chromedriver_path)
+    option = webdriver.ChromeOptions()
+    chrome_prefs = {}
+    option.experimental_options["prefs"] = chrome_prefs
+    chrome_prefs["profile.default_content_settings"] = {"images": 2}
+    chrome_prefs["profile.managed_default_content_settings"] = {"images": 2}
+
+    browser = webdriver.Chrome(chromedriver_path, options=option)
     browser.get(search_engine)
 
     if F.use_wx:
