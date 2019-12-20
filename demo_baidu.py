@@ -125,6 +125,7 @@ def main():
         print('----', e)
         print(traceback.format_exc())
         log.info('{}: {}'.format(uid, e))
+        if F.use_wx: group.send("error!")
     try:
         if not F.no_save_img:
             move_image('debug_images/', uid)
