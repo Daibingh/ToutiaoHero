@@ -116,9 +116,9 @@ def main():
         print('------------------------------------------------------')
 
         if F.use_wx:
-            msg = "百度推荐答案: {}, 备选(否定题目): {}".format(baidu_ans, baidu_ans_bak)
+            msg = "百度: {}, 备选: {}".format(baidu_ans, baidu_ans_bak)
             if F.use_toutiao:
-                msg += "\n头条推荐答案: {}, 备选(否定题目): {}".format(toutiao_ans, toutiao_ans_bak)
+                msg = "头条: {}, 备选: {}\n".format(toutiao_ans, toutiao_ans_bak) + msg
             group.send(msg)
 
     except Exception as e:
@@ -190,9 +190,9 @@ def test():
     print('------------------------------------------------------')
 
     if F.use_wx:
-        msg = "百度推荐答案: {}, 备选(否定题目): {}".format(baidu_ans, baidu_ans_bak)
+        msg = "百度: {}, 备选: {}".format(baidu_ans, baidu_ans_bak)
         if F.use_toutiao:
-            msg += "\n头条推荐答案: {}, 备选(否定题目): {}".format(toutiao_ans, toutiao_ans_bak)
+            msg = "头条: {}, 备选: {}\n".format(toutiao_ans, toutiao_ans_bak) + msg
         group.send(msg)
 
 
