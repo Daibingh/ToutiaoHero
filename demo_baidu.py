@@ -37,7 +37,7 @@ def crop_img(img_file):
     x, y, w, h = conf.roi
     img = img[y:y+h,x:x+w]
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    _, binary = cv2.threshold(gray, 158, 255, cv2.THRESH_BINARY)
+    _, binary = cv2.threshold(gray, 160, 255, cv2.THRESH_BINARY)
     # binary = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 15, 12)
     _, buf = cv2.imencode(".png", binary)
     return bytes(buf)
