@@ -73,11 +73,11 @@ def ocr2(img_bytes):
     res = client.basicGeneral(img_bytes, options)
     return res['words_result']
 
-@run_time
-def crop_ocr(img_file):
-    cmd = './bin/crop_ocr {}'.format(img_file)
-    p = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    return json.loads(p.stdout.read())['words_result']
+# @run_time
+# def crop_ocr(img_file):
+#     cmd = './bin/crop_ocr {}'.format(img_file)
+#     p = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+#     return json.loads(p.stdout.read())['words_result']
 
 def parse_json(j):
     text = ''
