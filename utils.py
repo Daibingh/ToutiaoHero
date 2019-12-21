@@ -8,12 +8,10 @@ import requests as R
 import json
 
 
-""" 你的 APPID AK SK """
-APP_ID = '18027270'
-API_KEY = 'wxHR7dilrzB3ka2M6QZrDbPp'
-SECRET_KEY = 'q9gMZgoLcT9KWhx0VUG7phLkr8qaWlXu'
+with open("baidu_ocr.json", 'r') as f:
+    j = json.load(f)
 
-client = AipOcr(APP_ID, API_KEY, SECRET_KEY)
+client = AipOcr(j['APP_ID'], j['API_KEY'], j['SECRET_KEY'])
 
 
 class Logger:
@@ -48,7 +46,7 @@ def run_time(func):
         return res
     return wrapper
 
-""" 读取图片 """
+
 def get_file_content(filePath):
     with open(filePath, 'rb') as fp:
         return fp.read()

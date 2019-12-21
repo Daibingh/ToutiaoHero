@@ -4,3 +4,4 @@ log.txt
 debug_images
 debug.log
 bin
+*.json
