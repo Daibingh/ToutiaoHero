@@ -6,9 +6,10 @@ import logging
 import subprocess
 import requests as R
 import json
+from os.path import dirname, join
 
 
-with open("baidu_ocr.json", 'r') as f:
+with open(join(dirname(__file__), "baidu_ocr.json"), 'r') as f:
     j = json.load(f)
 
 client = AipOcr(j['APP_ID'], j['API_KEY'], j['SECRET_KEY'])
