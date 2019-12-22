@@ -227,11 +227,12 @@ def check_state(img_file):
     if np.logical_and(r > 250-delta, g<92+delta).any(): return False
     return True
 
-def get_minute():
-    return datetime.now().minute
+def get_time():
+    now = datetime.now()
+    return str(now).split(' ')[-1][:5]
 
-def isOver(m):
-    return m <= get_minute()
+def isOver(t):
+    return t==get_time()
 
 if __name__ == '__main__':
 
@@ -243,7 +244,7 @@ if __name__ == '__main__':
     args.add_argument('--no_log', action='store_true')
     args.add_argument('--no_save_img', action='store_true')
     args.add_argument('--use_toutiao', action='store_true')
-    args.add_argument('--deadline', type=int, default=30)
+    # args.add_argument('--deadline', type=int, default=30)
 
     F = args.parse_args()
 
@@ -271,7 +272,7 @@ if __name__ == '__main__':
 
     if F.use_wx:
         # 初始化机器人，扫码登陆
-        bot = Bot(cache_path=True)
+        bot = Bot()
         # my_friend = bot.friends().search('姐')[0]
         group = bot.groups().search('答题')[0]
         print(group)
@@ -284,10 +285,11 @@ if __name__ == '__main__':
     # # 循环监听
     # pythoncom.PumpMessages()
 
-    time_interval = .1
+    time_interval = .11
     state_queue = []
     max_len = 3
-    sleep_time = 30
+    sleep_time = 50
+    deadline = '21:30'
 
     # t0 = time.time()
 
@@ -306,7 +308,7 @@ if __name__ == '__main__':
                     main()
                 time.sleep(sleep_time)
 
-            if isOver(F.deadline): 
+            if isOver(deadline): 
                 quit()
 
             time.sleep(time_interval)
