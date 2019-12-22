@@ -292,8 +292,6 @@ if __name__ == '__main__':
     # sleep_time = 50
     # deadline = '21:30'
 
-    # t0 = time.time()
-
     try:
         while True:
             ret = screencap()
@@ -302,7 +300,6 @@ if __name__ == '__main__':
             state_queue.append(curr_state)
 
             if len(state_queue) == max_len and all(state_queue):
-                # print('****', time.time()-t0)
                 if F.debug:
                     test()
                 else:
@@ -314,5 +311,4 @@ if __name__ == '__main__':
 
             time.sleep(time_interval)
     except KeyboardInterrupt:
-        browser.quit()
-        sys.exit()
+        quit()
