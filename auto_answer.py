@@ -244,7 +244,7 @@ if __name__ == '__main__':
     args.add_argument('--no_log', action='store_true')
     args.add_argument('--no_save_img', action='store_true')
     args.add_argument('--use_toutiao', action='store_true')
-    # args.add_argument('--deadline')
+    args.add_argument('--deadline')
 
     F = args.parse_args()
 
@@ -289,7 +289,7 @@ if __name__ == '__main__':
     state_queue = []
     max_len = 3
     sleep_time = 50
-    deadline = '21:30'
+    # deadline = '21:30'
 
     # t0 = time.time()
 
@@ -308,7 +308,7 @@ if __name__ == '__main__':
                     main()
                 time.sleep(sleep_time)
 
-            if isOver(deadline): 
+            if isOver(F.deadline): 
                 quit()
 
             time.sleep(time_interval)
