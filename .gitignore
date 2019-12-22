@@ -5,3 +5,4 @@ debug_images
 debug.log
 bin
 *.json
+wxpy.pkl

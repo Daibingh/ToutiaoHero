@@ -271,7 +271,7 @@ if __name__ == '__main__':
 
     if F.use_wx:
         # 初始化机器人，扫码登陆
-        bot = Bot()
+        bot = Bot(cache_path=True)
         # my_friend = bot.friends().search('姐')[0]
         group = bot.groups().search('答题')[0]
         print(group)
