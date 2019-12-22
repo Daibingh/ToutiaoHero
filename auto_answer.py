@@ -244,7 +244,7 @@ if __name__ == '__main__':
     args.add_argument('--no_log', action='store_true')
     args.add_argument('--no_save_img', action='store_true')
     args.add_argument('--use_toutiao', action='store_true')
-    # args.add_argument('--deadline', type=int, default=30)
+    # args.add_argument('--deadline')
 
     F = args.parse_args()
 
