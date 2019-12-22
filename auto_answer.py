@@ -287,6 +287,7 @@ if __name__ == '__main__':
     state_queue = []
     max_len = 3
     sleep_time = 30
+    deadline = 30
 
     # t0 = time.time()
 
@@ -305,7 +306,7 @@ if __name__ == '__main__':
                     main()
                 time.sleep(sleep_time)
 
-            if isOver(1): 
+            if isOver(deadline): 
                 quit()
 
             time.sleep(time_interval)
