@@ -36,9 +36,9 @@ def crop_img(img_file):
     x, y, w, h = conf.roi
     img = img[y:y+h,x:x+w]
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    _, binary = cv2.threshold(gray, 161, 255, cv2.THRESH_BINARY)
+    # _, binary = cv2.threshold(gray, 161, 255, cv2.THRESH_BINARY)
     # binary = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 15, 12)
-    _, buf = cv2.imencode(".png", binary)
+    _, buf = cv2.imencode(".png", gray)
     return bytes(buf)
 
 # @run_time
@@ -95,7 +95,7 @@ def main():
                 toutiao_ans, toutiao_ans_bak = max(opt_score2, key=opt_score2.get), min(opt_score2, key=opt_score2.get)
         else:
             time.sleep(F.wait_time)
-        WebDriverWait(browser,2,0.1).until(EC.presence_of_all_elements_located((By.CSS_SELECTOR,"div.result.c-container")))
+        WebDriverWait(browser,3,0.1).until(EC.presence_of_all_elements_located((By.CSS_SELECTOR,"div.result.c-container")))
 
         opt_score = baidu_score(browser, opts.strip().split(' '))
         if sum(opt_score.values()) == 0:
@@ -171,7 +171,7 @@ def test():
     else:
         time.sleep(F.wait_time)
 
-    WebDriverWait(browser,2,0.1).until(EC.presence_of_all_elements_located((By.CSS_SELECTOR,"div.result.c-container")))
+    WebDriverWait(browser,3,0.1).until(EC.presence_of_all_elements_located((By.CSS_SELECTOR,"div.result.c-container")))
 
     opt_score = baidu_score(browser, opts.strip().split(' '))
     if sum(opt_score.values()) == 0:
@@ -266,9 +266,9 @@ if __name__ == '__main__':
         print(group)
 
 
-    time_interval = .11
+    time_interval = .2
     state_queue = []
-    max_len = 3
+    max_len = 2
     # sleep_time = 50
     # deadline = '21:30'
 
