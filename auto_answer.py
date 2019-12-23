@@ -231,6 +231,7 @@ if __name__ == '__main__':
     args.add_argument('--no_save_img', action='store_true')
     args.add_argument('--use_toutiao', action='store_true')
     args.add_argument('--sleep_time', type=int, default=50)
+    args.add_argument('--begin_sleep', type=float, default=0.0, help='begin sleep time (unit: m)')
     args.add_argument('--deadline')
 
     F = args.parse_args()
@@ -270,6 +271,8 @@ if __name__ == '__main__':
     max_len = 3
     # sleep_time = 50
     # deadline = '21:30'
+
+    time.sleep(F.begin_sleep*60)
 
     try:
         while True:
