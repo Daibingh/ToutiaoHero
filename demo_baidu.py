@@ -23,7 +23,6 @@ import argparse
 hot_key = "F2"
 search_engine = 'http://www.baidu.com'
 chromedriver_path = './chromedriver_win32/chromedriver.exe'
-thresh = 158
 
 # @run_time
 def screencap():
