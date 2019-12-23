@@ -21,7 +21,6 @@ import argparse
 from datetime import datetime
 
 
-hot_key = "F2"
 search_engine = 'http://www.baidu.com'
 chromedriver_path = './chromedriver_win32/chromedriver.exe'
 
@@ -196,18 +195,6 @@ def test():
         group.send(msg)
 
 
-# def onKeyboardEvent(event):
-#     if event.Key == 'F2':
-#         if F.debug:
-#             test()
-#         else:
-#             main()
-#     elif event.Key == 'Q':
-#         browser.quit()
-#         sys.exit()
-#     return True
-
-
 def quit():
     browser.quit()
     sys.exit()
@@ -277,13 +264,6 @@ if __name__ == '__main__':
         group = bot.groups().search('答题')[0]
         print(group)
 
-    # # 创建管理器
-    # hm = pyHook.HookManager()
-    # # 监听键盘
-    # hm.KeyDown = onKeyboardEvent   
-    # hm.HookKeyboard()  
-    # # 循环监听
-    # pythoncom.PumpMessages()
 
     time_interval = .11
     state_queue = []
