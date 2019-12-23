@@ -24,7 +24,7 @@ hot_key = "F2"
 search_engine = 'http://www.baidu.com'
 chromedriver_path = './chromedriver_win32/chromedriver.exe'
 
-# @run_time
+@run_time
 def screencap():
     cmd = conf.cmd
     ret = subprocess.call(cmd, shell=True, timeout=3)
@@ -230,7 +230,7 @@ if __name__ == '__main__':
         subprocess.call('adb devices', shell=True)
     else:
         from config import conf2 as conf
-        subprocess.call('adb connect 127.0.0.1:62001', shell=True)
+        subprocess.call('adb connect 127.0.0.1:62025', shell=True)
         subprocess.call('adb devices', shell=True)
 
     option = webdriver.ChromeOptions()
