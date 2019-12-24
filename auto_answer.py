@@ -277,9 +277,8 @@ if __name__ == '__main__':
     # sleep_time = 50
     # deadline = '21:30'
 
-    time.sleep(F.begin_sleep*60)
-
     try:
+        time.sleep(F.begin_sleep*60)
         while True:
             img = screencap(stdout=True)
             curr_state = check_state(img)
