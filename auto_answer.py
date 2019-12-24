@@ -19,6 +19,7 @@ from wxpy import *
 import traceback
 import argparse
 from datetime import datetime
+import jieba.posseg as pseg
 
 
 search_engine = 'http://www.baidu.com'
@@ -59,10 +60,19 @@ def move_image(dist_folder, uid):
     shutil.move(conf.img_folder+'screen.png', dist_folder+uid+'.png')  # 移动文件
 
 # @run_time
-def baidu_score(browser, opts):
+def baidu_score(browser, opts, que=None):
     res_list = browser.find_elements_by_css_selector("div.result.c-container")
     text = ' '.join([t.text.split('...')[0] for t in res_list]).replace('\n', ' ')
-    return dict(zip(opts, map(lambda t: text.count(t), opts)))
+    counts = dict(zip(opts, map(lambda t: text.count(t), opts)))
+    if sum(counts.values())>0:
+        return counts
+    else:
+        que_words = [pair.word for pair in pseg.cut(que)]
+        for opt in opts:
+            cuts = pseg.cut(opt)
+            counts[opt] = sum([text.count(pair.word) for pair in pseg.cut(opt) 
+                if pair.word not in que_words and pair.flag[0] != 'u' and pair.flag not in ['x', 'w', 'p']])
+        return counts
 
 # @run_time
 def sogou_score(browser, opts):
@@ -102,7 +112,7 @@ def main():
             time.sleep(F.wait_time)
         WebDriverWait(browser,3,0.1).until(EC.presence_of_all_elements_located((By.CSS_SELECTOR,"div.result.c-container")))
 
-        opt_score = baidu_score(browser, opts.strip().split(' '))
+        opt_score = baidu_score(browser, opts.strip().split(' '), que=que)
         if sum(opt_score.values()) == 0:
             baidu_ans, baidu_ans_bak = '--', '--'
         else:
@@ -178,7 +188,7 @@ def test():
 
     WebDriverWait(browser,3,0.1).until(EC.presence_of_all_elements_located((By.CSS_SELECTOR,"div.result.c-container")))
 
-    opt_score = baidu_score(browser, opts.strip().split(' '))
+    opt_score = baidu_score(browser, opts.strip().split(' '), que=que)
     if sum(opt_score.values()) == 0:
         baidu_ans, baidu_ans_bak = '--', '--'
     else:
@@ -228,7 +238,7 @@ def isOver(t):
 if __name__ == '__main__':
 
     args = argparse.ArgumentParser()
-    args.add_argument('--use_phone', action='store_true')
+    args.add_argument('--device', choices=['phone', 'yeshen', 'xiaoyao'])
     args.add_argument('--debug', action='store_true')
     args.add_argument('--use_wx', action='store_true')
     args.add_argument('--wait_time', type=float, default=.8)
@@ -246,12 +256,16 @@ if __name__ == '__main__':
     if F.no_log:
         log.disabled = True
 
-    if F.use_phone:
+    if F.device == 'phone':
         from config import conf1 as conf  # 手机配置
         subprocess.call('adb devices', shell=True)
-    else:
+    elif F.device == 'yeshen':
         from config import conf2 as conf
-        subprocess.call('adb connect 127.0.0.1:62025', shell=True)
+        subprocess.call('adb connect 127.0.0.1:{}'.format(conf.port), shell=True)
+        subprocess.call('adb devices', shell=True)
+    elif F.device == 'xiaoyao':
+        from config import conf3 as conf
+        subprocess.call('adb connect 127.0.0.1:{}'.format(conf.port), shell=True)
         subprocess.call('adb devices', shell=True)
 
     option = webdriver.ChromeOptions()

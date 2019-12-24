@@ -8,7 +8,15 @@ class conf1(object):
         
 
 class conf2(object):
-    """模拟器配置"""
+    """夜神模拟器配置"""
     roi = (48, 200, 625, 550)  # ！
-    img_folder = 'C:/Users/hdb/Nox_share/ImageShare/'
-    cmd = 'adb shell screencap -p /mnt/shared/Image/screen.png'
+    img_folder = './'
+    cmd = 'adb shell screencap -p /mnt/shared/Image/screen.png && adb pull /mnt/shared/Image/screen.png ./screen.png'
+    port = 62025
+
+class conf3(object):
+    """逍遥模拟器配置"""
+    roi = (48, 200, 625, 550)  # ！
+    img_folder = './' 
+    cmd = 'adb shell screencap -p /sdcard/Pictures/screen.png && adb pull /sdcard/Pictures/screen.png ./screen.png'
+    port = 21503

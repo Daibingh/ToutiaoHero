@@ -18,6 +18,7 @@ import uuid
 from wxpy import *
 import traceback
 import argparse
+import jieba.posseg as pseg
 
 
 hot_key = "F2"
@@ -26,8 +27,7 @@ chromedriver_path = './chromedriver_win32/chromedriver.exe'
 
 @run_time
 def screencap():
-    cmd = conf.cmd
-    ret = subprocess.call(cmd, shell=True, timeout=3)
+    ret = subprocess.call(conf.cmd, shell=True, timeout=3)
     return ret
 
 @run_time
@@ -54,10 +54,19 @@ def move_image(dist_folder, uid):
     shutil.move(conf.img_folder+'screen.png', dist_folder+uid+'.png')  # 移动文件
 
 # @run_time
-def baidu_score(browser, opts):
+def baidu_score(browser, opts, que=None):
     res_list = browser.find_elements_by_css_selector("div.result.c-container")
     text = ' '.join([t.text.split('...')[0] for t in res_list]).replace('\n', ' ')
-    return dict(zip(opts, map(lambda t: text.count(t), opts)))
+    counts = dict(zip(opts, map(lambda t: text.count(t), opts)))
+    if sum(counts.values())>0:
+        return counts
+    else:
+        que_words = [pair.word for pair in pseg.cut(que)]
+        for opt in opts:
+            cuts = pseg.cut(opt)
+            counts[opt] = sum([text.count(pair.word) for pair in pseg.cut(opt) 
+                if pair.word not in que_words and pair.flag[0] != 'u' and pair.flag not in ['x', 'w', 'p']])
+        return counts
 
 # @run_time
 def sogou_score(browser, opts):
@@ -97,7 +106,7 @@ def main():
             time.sleep(F.wait_time)
         WebDriverWait(browser,3,0.1).until(EC.presence_of_all_elements_located((By.CSS_SELECTOR,"div.result.c-container")))
 
-        opt_score = baidu_score(browser, opts.strip().split(' '))
+        opt_score = baidu_score(browser, opts.strip().split(' '), que=que)
         if sum(opt_score.values()) == 0:
             baidu_ans, baidu_ans_bak = '--', '--'
         else:
@@ -144,7 +153,7 @@ def test():
                     # '以下哪个项目不属于今年举行的世界军人运动 会上的项目? 跳伞 击剑 散打',
                     # '小明乘坐高铁时发现车辆正疾驰穿过航站 楼,请问他正在哪一机场附近? 北京大兴国际机场 厦门高崎国际机场 广州白云国际机场',
                     # '中国女排目前已经十度成为世界冠军,其中包 含了奥运会、世界杯和哪项赛事? 国际排联大冠军杯 世俱杯 世锦赛',
-                    '乐队“盘尼西林”的名字是哪种药物的音译名? 青霉素 黄曲霉素 红霉素',
+                    '以下哪项措施可能帮助宝宝远离红屁屁? 换上帮宝适泡泡纸尿裤 给宝宝唱首歌 多喝热水',
                     # '动画片《葫芦娃》中,五娃的技能是? 隐身 吐火 吐水',
                     # '小提琴有4根弦,那么大提琴有几根弦? 4 5 6',
                     # '小说《天龙八部》中,虛竹的配偶梦姑是哪国的公主? 西夏 大理 吐蕃',
@@ -173,7 +182,7 @@ def test():
 
     WebDriverWait(browser,3,0.1).until(EC.presence_of_all_elements_located((By.CSS_SELECTOR,"div.result.c-container")))
 
-    opt_score = baidu_score(browser, opts.strip().split(' '))
+    opt_score = baidu_score(browser, opts.strip().split(' '), que=que)
     if sum(opt_score.values()) == 0:
         baidu_ans, baidu_ans_bak = '--', '--'
     else:
@@ -210,7 +219,7 @@ def onKeyboardEvent(event):
 if __name__ == '__main__':
 
     args = argparse.ArgumentParser()
-    args.add_argument('--use_phone', action='store_true')
+    args.add_argument('--device', choices=['phone', 'yeshen', 'xiaoyao'])
     args.add_argument('--debug', action='store_true')
     args.add_argument('--use_wx', action='store_true')
     args.add_argument('--wait_time', type=float, default=.8)
@@ -225,12 +234,16 @@ if __name__ == '__main__':
     if F.no_log:
         log.disabled = True
 
-    if F.use_phone:
+    if F.device == 'phone':
         from config import conf1 as conf  # 手机配置
         subprocess.call('adb devices', shell=True)
-    else:
+    elif F.device == 'yeshen':
         from config import conf2 as conf
-        subprocess.call('adb connect 127.0.0.1:62025', shell=True)
+        subprocess.call('adb connect 127.0.0.1:{}'.format(conf.port), shell=True)
+        subprocess.call('adb devices', shell=True)
+    elif F.device == 'xiaoyao':
+        from config import conf3 as conf
+        subprocess.call('adb connect 127.0.0.1:{}'.format(conf.port), shell=True)
         subprocess.call('adb devices', shell=True)
 
     option = webdriver.ChromeOptions()
