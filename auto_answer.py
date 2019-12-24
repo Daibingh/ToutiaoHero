@@ -218,7 +218,7 @@ def quit():
 # @run_time
 def check_state(img):
     delta = 3
-    x,y,w,h = 48,325,625,24
+    x,y,w,h = conf.roi_check
     # img = cv2.imread(img_file)
     roi = img[y:y+h,x:x+w]
     if roi.mean() < 255 - delta: return False
@@ -226,7 +226,7 @@ def check_state(img):
     img = img[y:y+h,x:x+w]
     b, g, r = img[:,:,0],img[:,:,1],img[:,:,2]
     if np.logical_and(b > 231-delta, r < 43+delta).any(): return False
-    if np.logical_and(r > 250-delta, g<92+delta).any(): return False
+    # if np.logical_and(r > 250-delta, g<92+delta).any(): return False
     return True
 
 def get_time():
