@@ -37,8 +37,8 @@ def screencap(stdout=False):
 
 
 @run_time
-def crop_img(img_file):
-    img = cv2.imread(img_file)
+def crop_img(img):
+    # img = cv2.imread(img_file)
     x, y, w, h = conf.roi
     img = img[y:y+h,x:x+w]
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -80,16 +80,16 @@ def sogou_score(browser, opts):
     return dict(zip(opts, map(lambda t: text.count(t), opts)))
 
 @run_time
-def main():
+def main(img):
     print(chr(27) + "[2J")  # clear terminal
 
     uid = uuid.uuid4().hex
-    ret = screencap()
-    if ret != 0:
-        print('\033[1;31m---- adb offline!\033[0m')
-        return
+    # ret = screencap()
+    # if ret != 0:
+    #     print('\033[1;31m---- adb offline!\033[0m')
+    #     return
     try:
-        img_bytes = crop_img(conf.img_folder+'screen.png')
+        img_bytes = crop_img(img)
         ocr_res = ocr2(img_bytes)
         search_text = process_res(ocr_res)
         que, opts = search_text.split('?')
@@ -142,7 +142,8 @@ def main():
         if F.use_wx: group.send("error!")
     try:
         if not F.no_save_img:
-            move_image('debug_images/', uid)
+            # move_image('debug_images/', uid)
+            cv2.imwrite('debug_images/{}.png'.format(uid), img)
     except Exception as e:
         print('----', e)
         print(traceback.format_exc())
@@ -303,7 +304,7 @@ if __name__ == '__main__':
                 if F.debug:
                     test()
                 else:
-                    main()
+                    main(img)
                 time.sleep(F.sleep_time)
 
             if isOver(F.deadline): 
