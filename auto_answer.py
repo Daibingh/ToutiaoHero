@@ -25,10 +25,15 @@ search_engine = 'http://www.baidu.com'
 chromedriver_path = './chromedriver_win32/chromedriver.exe'
 
 # @run_time
-def screencap():
-    cmd = conf.cmd
-    ret = subprocess.call(cmd, shell=True, timeout=3)
-    return ret
+def screencap(stdout=False):
+    if not stdout:
+        ret = subprocess.call(conf.cmd, shell=True, timeout=3)
+        return ret
+    else:
+        p = subprocess.Popen('adb shell screencap -p', stdout=subprocess.PIPE)
+        b = p.stdout.read()
+        return cv2.imdecode(np.asarray(bytearray(b.replace(b'\r\r\n', b'\n')), dtype=np.uint8), cv2.IMREAD_COLOR)
+
 
 @run_time
 def crop_img(img_file):
@@ -69,7 +74,7 @@ def main():
     print(chr(27) + "[2J")  # clear terminal
 
     uid = uuid.uuid4().hex
-    # ret = screencap()
+    ret = screencap()
     if ret != 0:
         print('\033[1;31m---- adb offline!\033[0m')
         return
@@ -200,10 +205,10 @@ def quit():
     sys.exit()
 
 # @run_time
-def check_state(img_file):
+def check_state(img):
     delta = 3
     x,y,w,h = 48,325,625,24
-    img = cv2.imread(img_file)
+    # img = cv2.imread(img_file)
     roi = img[y:y+h,x:x+w]
     if roi.mean() < 255 - delta: return False
     x,y,w,h = conf.roi
@@ -276,8 +281,8 @@ if __name__ == '__main__':
 
     try:
         while True:
-            ret = screencap()
-            curr_state = check_state(conf.img_folder+'screen.png')
+            img = screencap(stdout=True)
+            curr_state = check_state(img)
             if len(state_queue) == max_len: state_queue.pop(0)
             state_queue.append(curr_state)
 
