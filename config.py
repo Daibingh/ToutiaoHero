@@ -17,7 +17,7 @@ class conf2(object):
 
 class conf3(object):
     """逍遥模拟器配置"""
-    roi = (34, 171, 653, 460)  # ！
+    roi = (34, 180, 653, 420)  # ！
     roi_check = (34,264,653,17)
     img_folder = './' 
     cmd = 'adb shell screencap -p /sdcard/Pictures/screen.png && adb pull /sdcard/Pictures/screen.png ./screen.png'

@@ -4,103 +4,43 @@ import subprocess
 import time
 import cv2
 import numpy as np
-from utils import run_time, ocr, ocr2, Logger, toutiao_score
+from utils import *
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import PyHook3 as pyHook
-import pythoncom
 import sys
-import shutil
 import uuid
 from wxpy import *
 import traceback
 import argparse
 from datetime import datetime
-import jieba.posseg as pseg
 
 
-search_engine = 'http://www.baidu.com'
 chromedriver_path = './chromedriver_win32/chromedriver.exe'
 
-# @run_time
-def screencap(stdout=False):
-    if not stdout:
-        ret = subprocess.call(conf.cmd, shell=True, timeout=3)
-        return ret
-    else:
-        p = subprocess.Popen('adb shell screencap -p', stdout=subprocess.PIPE)
-        b = p.stdout.read()
-        return cv2.imdecode(np.asarray(bytearray(b.replace(b'\r\r\n', b'\n')), dtype=np.uint8), cv2.IMREAD_COLOR)
-
-
-@run_time
-def crop_img(img):
-    # img = cv2.imread(img_file)
-    x, y, w, h = conf.roi
-    img = img[y:y+h,x:x+w]
-    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    # _, binary = cv2.threshold(gray, 161, 255, cv2.THRESH_BINARY)
-    # binary = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 15, 12)
-    _, buf = cv2.imencode(".png", gray)
-    return bytes(buf)
-
-# @run_time
-def process_res(res):
-    text = ' '.join([t.get('words').strip() for t in res])
-    # que_opt = text[2:].split('?')
-    # que_opt[0] += '?'
-    ind = text.find('.')
-    return text[ind+1:]
-
-
-def move_image(dist_folder, uid):
-    shutil.move(conf.img_folder+'screen.png', dist_folder+uid+'.png')  # 移动文件
-
-# @run_time
-def baidu_score(browser, opts, que=None):
-    res_list = browser.find_elements_by_css_selector("div.result.c-container")
-    text = ' '.join([t.text.split('...')[0] for t in res_list]).replace('\n', ' ')
-    counts = dict(zip(opts, map(lambda t: text.count(t), opts)))
-    if sum(counts.values())>0:
-        return counts
-    else:
-        que_words = [pair.word for pair in pseg.cut(que)]
-        for opt in opts:
-            cuts = pseg.cut(opt)
-            counts[opt] = sum([text.count(pair.word) for pair in pseg.cut(opt) 
-                if pair.word not in que_words and pair.flag[0] != 'u' and pair.flag not in ['x', 'w', 'p']])
-        return counts
-
-# @run_time
-def sogou_score(browser, opts):
-    text = browser.find_element_by_class_name('results').text
-    return dict(zip(opts, map(lambda t: text.count(t), opts)))
 
 @run_time
 def main(img):
     print(chr(27) + "[2J")  # clear terminal
 
     uid = uuid.uuid4().hex
-    # ret = screencap()
-    # if ret != 0:
-    #     print('\033[1;31m---- adb offline!\033[0m')
-    #     return
     try:
-        img_bytes = crop_img(img)
+        img_bytes = crop_img(img, conf.roi)
         ocr_res = ocr2(img_bytes)
         search_text = process_res(ocr_res)
         que, opts = search_text.split('?')
-        search_text = que.replace(' ', '') + '?' + opts
+        # search_text = que.replace(' ', '') + '?' + opts
+        # que = adjust_search_que(que.replace(' ', '') + '?', 38-get_text_width(opts))
+        # search_text = que + opts
+        search_text = que.replace(' ', '') + '?'
+
         print(">>>> 搜索的关键词是: {}".format(search_text))
         log.info("{}: 搜索关键词 {}".format(uid, search_text))
 
-        elem = browser.find_element_by_id("kw")
-        elem.clear()
-        elem.send_keys(search_text)
-        elem.send_keys(Keys.RETURN)
+        baidu_search(browser, search_text)
 
         if F.use_toutiao:
             opt_score2 = toutiao_score(search_text)
@@ -142,7 +82,6 @@ def main(img):
         if F.use_wx: group.send("error!")
     try:
         if not F.no_save_img:
-            # move_image('debug_images/', uid)
             cv2.imwrite('debug_images/{}.png'.format(uid), img)
     except Exception as e:
         print('----', e)
@@ -170,13 +109,14 @@ def test():
                     ]
     search_text = np.random.choice(search_text_list)
     que, opts = search_text.split('?')
-    search_text = que.replace(' ', '') + '?' + opts
+    # search_text = que.replace(' ', '') + '?' + opts
+    # que = adjust_search_que(que.replace(' ', '') + '?', 38-get_text_width(opts))
+    # search_text = que + opts
+    search_text = que.replace(' ', '') + '?'
+
     print(">>>> 搜索的关键词是: {}".format(search_text))
 
-    elem = browser.find_element_by_id("kw")
-    elem.clear()
-    elem.send_keys(search_text)
-    elem.send_keys(Keys.RETURN)
+    baidu_search(browser, search_text)
 
     if F.use_toutiao:
         opt_score2 = toutiao_score(search_text)
@@ -269,15 +209,6 @@ if __name__ == '__main__':
         subprocess.call('adb connect 127.0.0.1:{}'.format(conf.port), shell=True)
         subprocess.call('adb devices', shell=True)
 
-    option = webdriver.ChromeOptions()
-    chrome_prefs = {}
-    option.experimental_options["prefs"] = chrome_prefs
-    chrome_prefs["profile.default_content_settings"] = {"images": 2}
-    chrome_prefs["profile.managed_default_content_settings"] = {"images": 2}
-
-    browser = webdriver.Chrome(chromedriver_path, options=option)
-    browser.get(search_engine)
-
     if F.use_wx:
         # 初始化机器人，扫码登陆
         bot = Bot()
@@ -285,6 +216,7 @@ if __name__ == '__main__':
         group = bot.groups().search('答题')[0]
         print(group)
 
+    browser = baidu_browser_init(chromedriver_path)
 
     time_interval = .2
     state_queue = []
@@ -295,7 +227,7 @@ if __name__ == '__main__':
     try:
         time.sleep(F.begin_sleep*60)
         while True:
-            img = screencap(stdout=True)
+            img = screencap()
             curr_state = check_state(img)
             if len(state_queue) == max_len: state_queue.pop(0)
             state_queue.append(curr_state)
