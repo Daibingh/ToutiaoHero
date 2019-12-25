@@ -35,9 +35,9 @@ def isNeg(que):
 
 
 def isStable(que, score):
-    score = np.array(list(score.values()))
+    score = np.asarray(list(score.values()))
     neg = isNeg(que)
-    if (neg and np.where(score==score.min())[0].shape[0]>1) or (not neg and np.where(score==score.max())[0].shape[0]>1):
+    if neg and np.where(score==score.min())[0].shape[0]>1:  # or (not neg and np.where(score==score.max())[0].shape[0]>1)
         return False
     return True
 
