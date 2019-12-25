@@ -20,6 +20,27 @@ with open(join(dirname(__file__), "baidu_ocr.json"), 'r') as f:
 
 client = AipOcr(j['APP_ID'], j['API_KEY'], j['SECRET_KEY'])
 
+neg_keywords = ['不正确',
+                '不属于',
+                '不准确',
+                '不包含',
+                '不可能',
+                '不会',
+                '不是']
+
+def isNeg(que):
+    for t in neg_keywords:
+        if t in que: return True
+    return False
+
+
+def isStable(que, score):
+    score = np.array(list(score.values()))
+    neg = isNeg(que)
+    if (neg and np.where(score==score.min())[0].shape[0]>1) or (not neg and np.where(score==score.max())[0].shape[0]>1):
+        return False
+    return True
+
 
 class Logger:
     
@@ -86,7 +107,6 @@ def ocr2(img_bytes):
 #     return json.loads(p.stdout.read())['words_result']
 
 
-
 # @run_time
 def screencap():
     p = subprocess.Popen('adb shell screencap -p', stdout=subprocess.PIPE)
@@ -130,7 +150,6 @@ def get_text_width(text):
     font = ImageFont.truetype('arial.ttf', 1)
     return font.getsize(text)[0]+text.count(' ')
 
-
 # def adjust_search_que(que, limit):
 #     if get_text_width(que)<=limit:
 #         return que 
@@ -142,7 +161,7 @@ def get_text_width(text):
 
 def adjust_search_que(que, limit):
     if get_text_width(que)<=limit:
-        return que 
+        return que
     cuts = pseg.cut(que)
     que = ''
     f = False
@@ -155,11 +174,9 @@ def adjust_search_que(que, limit):
             que += pair.word
         elif pair.flag[0]!='u' and pair.flag not in ['p','y','r','c','e']:
             que += pair.word
-        
     if get_text_width(que)<=limit:
         return que
-    else:
-        return que[get_text_width(que)-limit:]
+    return que[get_text_width(que)-limit:]
 
 def baidu_search(browser,search_text):
     elem = browser.find_element_by_id("kw")
@@ -168,13 +185,15 @@ def baidu_search(browser,search_text):
     elem.send_keys(Keys.RETURN)
 
 # @run_time
-def baidu_score(browser, opts, que=None):
+def baidu_score(browser, opts, que=None, cut='later_cut'):
     res_list = browser.find_elements_by_css_selector("div.result.c-container")
     text = ' '.join([t.text.split('...')[0] for t in res_list]).replace('\n', ' ')
-    counts = dict(zip(opts, map(lambda t: text.count(t), opts)))
-    if sum(counts.values())>0 or que is None:
-        return counts
-    else:
+    if cut != 'cut':
+        counts = dict(zip(opts, map(lambda t: text.count(t), opts)))
+        if cut == 'no_cut' or (cut == 'later_cut' and sum(counts.values())>0):
+            return counts
+    if cut in ['cut', 'later_cut']:
+        counts = {}
         que_words = [pair.word for pair in pseg.cut(que)]
         for opt in opts:
             cuts = pseg.cut(opt)

@@ -36,27 +36,28 @@ def main():
         text = process_res(ocr_res)
         # print(search_text)
         que, opts = text.split('?')
-        search_text = que.replace(' ', '') + '?'
+        que = que.replace(' ', '') + '?'
 
-        print(">>>> 搜索的关键词是: {}".format(search_text))
-        log.info("{}: 搜索关键词 {}".format(uid, search_text))
+        print(">>>> 搜索的关键词是: {}".format(que))
+        log.info("{}: 搜索关键词 {}".format(uid, que))
 
-        baidu_search(browser, search_text)
+        baidu_search(browser, que)
 
         time.sleep(F.wait_time)
         WebDriverWait(browser,3,0.1).until(EC.presence_of_all_elements_located((By.CSS_SELECTOR,"div.result.c-container")))
 
         opt_score = baidu_score(browser, opts.strip().split(' '), que=que)
 
-        if sum(opt_score.values()) == 0:
-            que = adjust_search_que(search_text, 38-get_text_width(opts))
+        if not isStable(que, opt_score):
+            que = adjust_search_que(que, 38-get_text_width(opts))
             search_text = que + opts
             print(">>>> 搜索的关键词是: {}".format(search_text))
             log.info("{}: 搜索关键词 {}".format(uid, search_text))
             baidu_search(browser, search_text)
             time.sleep(F.wait_time)
             WebDriverWait(browser,3,0.1).until(EC.presence_of_all_elements_located((By.CSS_SELECTOR,"div.result.c-container")))
-            opt_score = baidu_score(browser, opts.strip().split(' '), que=que)
+            opts_list = opts.strip().split(' ')
+            opt_score = baidu_score(browser, opts_list, que=que, cut='cut' if np.mean([len(t) for t in opts_list])>4 else 'later_cut')
 
         if sum(opt_score.values()) == 0:
             baidu_ans, baidu_ans_bak = '--', '--'
@@ -87,16 +88,17 @@ def main():
 def test():
     print(chr(27) + "[2J")
 
-    search_text_list = ['以下选项中,第一批被列入国家级非物质文化遗产的是? 凉茶 珠算 酥油茶',
+    search_text_list = [
+                    # '以下选项中,第一批被列入国家级非物质文化遗产的是? 凉茶 珠算 酥油茶',
                     # "进博会吉祥物叫什么名字? 招财 进宝 来福",
-                    '歌曲《铃儿响叮当》的原版《JingleBells》最初是为哪个节日创作的? 圣诞节 复活节 感恩节',
+                    '关于沈从文的小说《边城》,下列说法不正确的是哪项? 以小镇茶峒为背景 描绘了湘西风土人情 荣获茅盾文学奖',
                     # "澳门回归时唱响的《七子之歌》的词作者是 哪个诗歌流派的? 朦胧派 新月派 湖畔派",
                     # '小明来到北京大兴国际机场的餐厅用餐时,发现? 价高质低 同质同价 同质价高',
                     # '以下哪个项目不属于今年举行的世界军人运动 会上的项目? 跳伞 击剑 散打',
                     # '小明乘坐高铁时发现车辆正疾驰穿过航站 楼,请问他正在哪一机场附近? 北京大兴国际机场 厦门高崎国际机场 广州白云国际机场',
                     # '中国女排目前已经十度成为世界冠军,其中包 含了奥运会、世界杯和哪项赛事? 国际排联大冠军杯 世俱杯 世锦赛',
                     # '以下哪项措施可能帮助宝宝远离红屁屁? 换上帮宝适泡泡纸尿裤 给宝宝唱首歌 多喝热水',
-                    '李健作词作曲并唱道“那里春风沉醉,那里绿草如茵”说的是哪个地方? 江南水乡 呼伦贝尔大草原 贝加尔湖畔',
+                    # '李健作词作曲并唱道“那里春风沉醉,那里绿草如茵”说的是哪个地方? 江南水乡 呼伦贝尔大草原 贝加尔湖畔',
                     # '动画片《葫芦娃》中,五娃的技能是? 隐身 吐火 吐水',
                     # '小提琴有4根弦,那么大提琴有几根弦? 4 5 6',
                     # '小说《天龙八部》中,虛竹的配偶梦姑是哪国的公主? 西夏 大理 吐蕃',
@@ -106,25 +108,26 @@ def test():
                     ]
     text = np.random.choice(search_text_list)
     que, opts = text.split('?')
-    search_text = que.replace(' ', '') + '?'
+    que = que.replace(' ', '') + '?'
 
-    print(">>>> 搜索的关键词是: {}".format(search_text))
+    print(">>>> 搜索的关键词是: {}".format(que))
 
-    baidu_search(browser, search_text)
+    baidu_search(browser, que)
     
     time.sleep(F.wait_time)
     WebDriverWait(browser,3,0.1).until(EC.presence_of_all_elements_located((By.CSS_SELECTOR,"div.result.c-container")))
 
     opt_score = baidu_score(browser, opts.strip().split(' '), que=que)
 
-    if sum(opt_score.values()) == 0:
-        que = adjust_search_que(search_text, 38-get_text_width(opts))
+    if not isStable(que, opt_score):
+        que = adjust_search_que(que, 38-get_text_width(opts))
         search_text = que + opts
         print(">>>> 搜索的关键词是: {}".format(search_text))
         baidu_search(browser, search_text)
         time.sleep(F.wait_time)
         WebDriverWait(browser,3,0.1).until(EC.presence_of_all_elements_located((By.CSS_SELECTOR,"div.result.c-container")))
-        opt_score = baidu_score(browser, opts.strip().split(' '), que=que)
+        opts_list = opts.strip().split(' ')
+        opt_score = baidu_score(browser, opts_list, que=que, cut='cut' if np.mean([len(t) for t in opts_list])>4 else 'later_cut')
 
     if sum(opt_score.values()) == 0:
         baidu_ans, baidu_ans_bak = '--', '--'
