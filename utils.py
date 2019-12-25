@@ -128,7 +128,7 @@ def baidu_browser_init(chromedriver_path):
 
 def get_text_width(text):
     font = ImageFont.truetype('arial.ttf', 1)
-    return font.getsize(text)[0]
+    return font.getsize(text)[0]+text.count(' ')
 
 
 # def adjust_search_que(que, limit):
@@ -141,11 +141,13 @@ def get_text_width(text):
 #     return que[get_text_width(que)-limit:]
 
 def adjust_search_que(que, limit):
+    if get_text_width(que)<=limit:
+        return que 
     cuts = pseg.cut(que)
     que = ''
     f = False
     for pair in cuts:
-        if pair.word in ['"', '“', '《']:
+        if pair.word in ['"', '“', '《'] and not f:
             f = True
         elif pair.word in ['"', '”', '》']:
             f = False
@@ -170,14 +172,14 @@ def baidu_score(browser, opts, que=None):
     res_list = browser.find_elements_by_css_selector("div.result.c-container")
     text = ' '.join([t.text.split('...')[0] for t in res_list]).replace('\n', ' ')
     counts = dict(zip(opts, map(lambda t: text.count(t), opts)))
-    if sum(counts.values())>0:
+    if sum(counts.values())>0 or que is None:
         return counts
     else:
         que_words = [pair.word for pair in pseg.cut(que)]
         for opt in opts:
             cuts = pseg.cut(opt)
             counts[opt] = sum([text.count(pair.word) for pair in pseg.cut(opt) 
-                if pair.word not in que_words and pair.flag[0] != 'u' and pair.flag not in ['x', 'w', 'p', 'r']])
+                if pair.word not in que_words and pair.flag[0] != 'u' and pair.flag not in ['x', 'w', 'p', 'r', 'c']])
         return counts
 
 # @run_time

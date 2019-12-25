@@ -33,12 +33,9 @@ def main():
         img_bytes = crop_img(img, conf.roi)
         ocr_res = ocr2(img_bytes)
         # print(ocr_res)
-        search_text = process_res(ocr_res)
+        text = process_res(ocr_res)
         # print(search_text)
-        que, opts = search_text.split('?')
-        # search_text = que.replace(' ', '') + '?' + opts
-        # que = adjust_search_que(que.replace(' ', '') + '?', 38-get_text_width(opts))
-        # search_text = que + opts
+        que, opts = text.split('?')
         search_text = que.replace(' ', '') + '?'
 
         print(">>>> 搜索的关键词是: {}".format(search_text))
@@ -46,21 +43,14 @@ def main():
 
         baidu_search(browser, search_text)
 
-        if F.use_toutiao:
-            opt_score2 = toutiao_score(search_text)
-            if sum(opt_score2.values()) == 0:
-                toutiao_ans, toutiao_ans_bak = '--', '--'
-            else:
-                toutiao_ans, toutiao_ans_bak = max(opt_score2, key=opt_score2.get), min(opt_score2, key=opt_score2.get)
-        else:
-            time.sleep(F.wait_time)
+        time.sleep(F.wait_time)
         WebDriverWait(browser,3,0.1).until(EC.presence_of_all_elements_located((By.CSS_SELECTOR,"div.result.c-container")))
 
         opt_score = baidu_score(browser, opts.strip().split(' '), que=que)
 
         if sum(opt_score.values()) == 0:
             que = adjust_search_que(search_text, 38-get_text_width(opts))
-            search_text = que + opts.strip()
+            search_text = que + opts
             print(">>>> 搜索的关键词是: {}".format(search_text))
             log.info("{}: 搜索关键词 {}".format(uid, search_text))
             baidu_search(browser, search_text)
@@ -75,19 +65,12 @@ def main():
 
         print('>>>> 百度打分: {}'.format(opt_score))
         log.info("{}: 百度打分 {}".format(uid, opt_score))
-        if F.use_toutiao:
-            print('>>>> 头条打分: {}'.format(opt_score2))
-            log.info("{}: 头条打分 {}".format(uid, opt_score2))
         print('\n')
         print(">>>> 百度推荐答案: {}, 备选(否定题目): {}".format(baidu_ans, baidu_ans_bak))
-        if F.use_toutiao:
-            print(">>>> 头条推荐答案: {}, 备选(否定题目): {}".format(toutiao_ans, toutiao_ans_bak))
         print('------------------------------------------------------')
 
         if F.use_wx:
             msg = "百度: {}, 备选: {}".format(baidu_ans, baidu_ans_bak)
-            if F.use_toutiao:
-                msg = "头条: {}, 备选: {}\n".format(toutiao_ans, toutiao_ans_bak) + msg
             group.send(msg)
 
     except Exception as e:
@@ -95,12 +78,9 @@ def main():
         print(traceback.format_exc())
         log.info('{}: {}'.format(uid, e))
         if F.use_wx: group.send("error!")
-    try:
-        if not F.no_save_img:
-            cv2.imwrite('debug_images/{}.png'.format(uid), img)
-    except Exception as e:
-        print('----', e)
-        print(traceback.format_exc())
+
+    if not F.no_save_img:
+        cv2.imwrite('debug_images/{}.png'.format(uid), img)
 
 
 @run_time
@@ -124,38 +104,27 @@ def test():
                     # '00后网络聊天时经常使用的缩写“XSWL"是在 表达哪种情绪? 高兴 生气 悲伤',
                     # '80年代风靡全国的“燕舞,燕舞,一曲歌来 片情″是哪种商品的广告歌曲? 收录机 电视机 卡拉OK机'
                     ]
-    search_text = np.random.choice(search_text_list)
-    que, opts = search_text.split('?')
-    # search_text = que.replace(' ', '') + '?' + opts
-    # que = adjust_search_que(que.replace(' ', '') + '?', 38-get_text_width(opts))
-    # search_text = que + opts
+    text = np.random.choice(search_text_list)
+    que, opts = text.split('?')
     search_text = que.replace(' ', '') + '?'
 
     print(">>>> 搜索的关键词是: {}".format(search_text))
 
     baidu_search(browser, search_text)
-
-    if F.use_toutiao:
-        opt_score2 = toutiao_score(search_text)
-        if sum(opt_score2.values()) == 0:
-            toutiao_ans, toutiao_ans_bak = '--', '--'
-        else:
-            toutiao_ans, toutiao_ans_bak = max(opt_score2, key=opt_score2.get), min(opt_score2, key=opt_score2.get)
-    else:
-        time.sleep(F.wait_time)
-
+    
+    time.sleep(F.wait_time)
     WebDriverWait(browser,3,0.1).until(EC.presence_of_all_elements_located((By.CSS_SELECTOR,"div.result.c-container")))
 
     opt_score = baidu_score(browser, opts.strip().split(' '), que=que)
 
     if sum(opt_score.values()) == 0:
-            que = adjust_search_que(search_text, 38-get_text_width(opts))
-            search_text = que + opts.strip()
-            print(">>>> 搜索的关键词是: {}".format(search_text))
-            baidu_search(browser, search_text)
-            time.sleep(F.wait_time)
-            WebDriverWait(browser,3,0.1).until(EC.presence_of_all_elements_located((By.CSS_SELECTOR,"div.result.c-container")))
-            opt_score = baidu_score(browser, opts.strip().split(' '), que=que)
+        que = adjust_search_que(search_text, 38-get_text_width(opts))
+        search_text = que + opts
+        print(">>>> 搜索的关键词是: {}".format(search_text))
+        baidu_search(browser, search_text)
+        time.sleep(F.wait_time)
+        WebDriverWait(browser,3,0.1).until(EC.presence_of_all_elements_located((By.CSS_SELECTOR,"div.result.c-container")))
+        opt_score = baidu_score(browser, opts.strip().split(' '), que=que)
 
     if sum(opt_score.values()) == 0:
         baidu_ans, baidu_ans_bak = '--', '--'
@@ -163,18 +132,12 @@ def test():
         baidu_ans, baidu_ans_bak = max(opt_score, key=opt_score.get), min(opt_score, key=opt_score.get)
 
     print('>>>> 百度打分: {}'.format(opt_score))
-    if F.use_toutiao:
-        print('>>>> 头条打分: {}'.format(opt_score2))
     print('\n')
     print(">>>> 百度推荐答案: {}, 备选(否定题目): {}".format(baidu_ans, baidu_ans_bak))
-    if F.use_toutiao:
-        print(">>>> 头条推荐答案: {}, 备选(否定题目): {}".format(toutiao_ans, toutiao_ans_bak))
     print('------------------------------------------------------')
 
     if F.use_wx:
         msg = "百度: {}, 备选: {}".format(baidu_ans, baidu_ans_bak)
-        if F.use_toutiao:
-            msg = "头条: {}, 备选: {}\n".format(toutiao_ans, toutiao_ans_bak) + msg
         group.send(msg)
 
 
@@ -199,7 +162,6 @@ if __name__ == '__main__':
     args.add_argument('--wait_time', type=float, default=.8)
     args.add_argument('--no_log', action='store_true')
     args.add_argument('--no_save_img', action='store_true')
-    args.add_argument('--use_toutiao', action='store_true')
 
     F = args.parse_args()
 
