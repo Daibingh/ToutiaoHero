@@ -115,10 +115,11 @@ def ocr2(img_bytes):
 
 @run_time
 def screencap(dev='pc'):
-    p = subprocess.Popen('adb shell screencap -p', stdout=subprocess.PIPE)
     if dev == 'phone':
+        p = subprocess.Popen('adb -s 35826afb0704 shell screencap -p', stdout=subprocess.PIPE)
         b = p.stdout.read().replace(b'\r\n', b'\n')
     else:
+        p = subprocess.Popen('adb shell screencap -p', stdout=subprocess.PIPE)
         b = p.stdout.read().replace(b'\r\r\n', b'\n')
     return cv2.imdecode(np.asarray(bytearray(b), dtype=np.uint8), cv2.IMREAD_COLOR)
 
