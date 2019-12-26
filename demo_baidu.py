@@ -28,7 +28,7 @@ def main():
     print(chr(27) + "[2J")  # clear terminal
 
     uid = uuid.uuid4().hex
-    img = screencap()
+    img = screencap(F.device)
     try:
         img_bytes = crop_img(img, conf.roi)
         ocr_res = ocr2(img_bytes)
@@ -57,7 +57,7 @@ def main():
             time.sleep(F.wait_time)
             WebDriverWait(browser,3,0.1).until(EC.presence_of_all_elements_located((By.CSS_SELECTOR,"div.result.c-container")))
             opts_list = opts.strip().split(' ')
-            opt_score = baidu_score(browser, opts_list, que=que, cut='cut' if np.mean([len(t) for t in opts_list])>4 else 'later_cut')
+            opt_score = baidu_score(browser, opts_list, que=que, cut='later_cut')
 
         if sum(opt_score.values()) == 0:
             baidu_ans, baidu_ans_bak = '--', '--'
@@ -91,7 +91,9 @@ def test():
     search_text_list = [
                     # '以下选项中,第一批被列入国家级非物质文化遗产的是? 凉茶 珠算 酥油茶',
                     # "进博会吉祥物叫什么名字? 招财 进宝 来福",
-                    '关于沈从文的小说《边城》,下列说法不正确的是哪项? 以小镇茶峒为背景 描绘了湘西风土人情 荣获茅盾文学奖',
+                    # '关于沈从文的小说《边城》,下列说法不正确的是哪项? 以小镇茶峒为背景 描绘了湘西风土人情 荣获茅盾文学奖',
+                    '下列黄果树瀑布说法不正确是? 古称白水河瀑布 喀斯特地貌瀑布 中国最宽的瀑布',
+                    # '有关“草履虫"的描述不正确的是哪项? 由一个细胞构成 雌雄同体 只有一种生殖方式',
                     # "澳门回归时唱响的《七子之歌》的词作者是 哪个诗歌流派的? 朦胧派 新月派 湖畔派",
                     # '小明来到北京大兴国际机场的餐厅用餐时,发现? 价高质低 同质同价 同质价高',
                     # '以下哪个项目不属于今年举行的世界军人运动 会上的项目? 跳伞 击剑 散打',
@@ -127,7 +129,7 @@ def test():
         time.sleep(F.wait_time)
         WebDriverWait(browser,3,0.1).until(EC.presence_of_all_elements_located((By.CSS_SELECTOR,"div.result.c-container")))
         opts_list = opts.strip().split(' ')
-        opt_score = baidu_score(browser, opts_list, que=que, cut='cut' if np.mean([len(t) for t in opts_list])>4 else 'later_cut')
+        opt_score = baidu_score(browser, opts_list, que=que, cut='later_cut')
 
     if sum(opt_score.values()) == 0:
         baidu_ans, baidu_ans_bak = '--', '--'

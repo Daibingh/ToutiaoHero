@@ -189,7 +189,7 @@ if __name__ == '__main__':
     try:
         time.sleep(F.begin_sleep*60)
         while True:
-            img = screencap()
+            img = screencap(F.device)
             curr_state = check_state(img)
             if len(state_queue) == max_len: state_queue.pop(0)
             state_queue.append(curr_state)

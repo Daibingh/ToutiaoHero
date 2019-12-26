@@ -13,6 +13,7 @@ from PIL import ImageFont
 import jieba.posseg as pseg
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
+import re
 
 
 with open(join(dirname(__file__), "baidu_ocr.json"), 'r') as f:
@@ -28,6 +29,11 @@ neg_keywords = ['不正确',
                 '不会',
                 '不是']
 
+stop_words = set(['下列',
+                  '关于',
+                  '有关',
+                  '不'])
+
 def isNeg(que):
     for t in neg_keywords:
         if t in que: return True
@@ -37,7 +43,7 @@ def isNeg(que):
 def isStable(que, score):
     score = np.asarray(list(score.values()))
     neg = isNeg(que)
-    if neg and np.where(score==score.min())[0].shape[0]>1:  # or (not neg and np.where(score==score.max())[0].shape[0]>1)
+    if score.sum() == 0 or (neg and np.where(score==score.min())[0].shape[0]>1):  # or (not neg and np.where(score==score.max())[0].shape[0]>1)
         return False
     return True
 
@@ -107,10 +113,13 @@ def ocr2(img_bytes):
 #     return json.loads(p.stdout.read())['words_result']
 
 
-# @run_time
-def screencap():
+@run_time
+def screencap(dev='pc'):
     p = subprocess.Popen('adb shell screencap -p', stdout=subprocess.PIPE)
-    b = p.stdout.read().replace(b'\r\r\n', b'\n')
+    if dev == 'phone':
+        b = p.stdout.read().replace(b'\r\n', b'\n')
+    else:
+        b = p.stdout.read().replace(b'\r\r\n', b'\n')
     return cv2.imdecode(np.asarray(bytearray(b), dtype=np.uint8), cv2.IMREAD_COLOR)
 
 
@@ -172,7 +181,7 @@ def adjust_search_que(que, limit):
             f = False
         if f: 
             que += pair.word
-        elif pair.flag[0]!='u' and pair.flag not in ['p','y','r','c','e']:
+        elif pair.flag[0]!='u' and pair.flag not in ['p','y','r','c','e'] and pair.word not in stop_words:
             que += pair.word
     if get_text_width(que)<=limit:
         return que
@@ -186,8 +195,10 @@ def baidu_search(browser,search_text):
 
 # @run_time
 def baidu_score(browser, opts, que=None, cut='later_cut'):
-    res_list = browser.find_elements_by_css_selector("div.result.c-container")
-    text = ' '.join([t.text.split('...')[0] for t in res_list]).replace('\n', ' ')
+    # res_list = browser.find_elements_by_css_selector("div.result.c-container")
+    # text = '\n'.join([t.text.split('...')[0] for t in res_list])
+    text = browser.find_element_by_css_selector("#content_left").text
+    text = re.sub(r"更多关于.*?的问题>>", '', text)
     if cut != 'cut':
         counts = dict(zip(opts, map(lambda t: text.count(t), opts)))
         if cut == 'no_cut' or (cut == 'later_cut' and sum(counts.values())>0):
