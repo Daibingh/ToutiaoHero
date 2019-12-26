@@ -124,13 +124,12 @@ def screencap(dev='pc'):
 
 
 @run_time
-def crop_img(img, roi):
+def crop_img(img, roi, th=-1):
     x, y, w, h = roi
     img = img[y:y+h,x:x+w]
-    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    # _, binary = cv2.threshold(gray, 161, 255, cv2.THRESH_BINARY)
-    # binary = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 15, 12)
-    _, buf = cv2.imencode(".png", gray)
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    if th > 0: _, img = cv2.threshold(img, th, 255, cv2.THRESH_BINARY)
+    _, buf = cv2.imencode(".png", img)
     return bytes(buf)
 
 # @run_time

@@ -30,7 +30,7 @@ def main():
     uid = uuid.uuid4().hex
     img = screencap(F.device)
     try:
-        img_bytes = crop_img(img, conf.roi)
+        img_bytes = crop_img(img, conf.roi, th=conf.thresh)
         ocr_res = ocr2(img_bytes)
         # print(ocr_res)
         text = process_res(ocr_res)

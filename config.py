@@ -5,6 +5,7 @@ class conf1(object):
     roi = (72, 420, 938, 1020)  # (x,y,w,h)
     img_folder = './'
     cmd = 'adb shell screencap -p /sdcard/screen.png && adb pull /sdcard/screen.png ./screen.png && adb shell rm /sdcard/screen.png'
+    thresh = 100
         
 
 class conf2(object):
@@ -14,6 +15,7 @@ class conf2(object):
     img_folder = './'
     cmd = 'adb shell screencap -p /mnt/shared/Image/screen.png && adb pull /mnt/shared/Image/screen.png ./screen.png'
     port = 62025
+    thresh = -1
 
 class conf3(object):
     """逍遥模拟器配置"""
@@ -22,3 +24,4 @@ class conf3(object):
     img_folder = './' 
     cmd = 'adb shell screencap -p /sdcard/Pictures/screen.png && adb pull /sdcard/Pictures/screen.png ./screen.png'
     port = 21503
+    thresh = -1
