@@ -1,0 +1,10 @@
+jieba==0.39
+opencv_python==4.1.0.25
+requests==2.18.4
+wxpy==0.3.9.8
+selenium==3.141.0
+pywin32==222
+numpy==1.16.1
+baidu_aip==2.2.18.0
+Pillow==6.2.1
+PyHook3==1.6.1
