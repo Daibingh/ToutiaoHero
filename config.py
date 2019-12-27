@@ -5,7 +5,7 @@ class conf1(object):
     roi = (72, 420, 938, 1020)  # (x,y,w,h)
     img_folder = './'
     cmd = 'adb shell screencap -p /sdcard/screen.png && adb pull /sdcard/screen.png ./screen.png && adb shell rm /sdcard/screen.png'
-    thresh = 100
+    thresh = -1
         
 
 class conf2(object):
