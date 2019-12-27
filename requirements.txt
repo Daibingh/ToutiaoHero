@@ -1,6 +1,6 @@
 jieba==0.39
 opencv_python==4.1.0.25
-requests==2.18.4
+requests==2.20.0
 wxpy==0.3.9.8
 selenium==3.141.0
 pywin32==222
