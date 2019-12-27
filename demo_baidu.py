@@ -28,7 +28,7 @@ def main():
     print(chr(27) + "[2J")  # clear terminal
 
     uid = uuid.uuid4().hex
-    img = screencap(F.device)
+    img = screencap(F.device, serial=conf.serial if F.device=='phone' else None)
     try:
         img_bytes = crop_img(img, conf.roi, th=conf.thresh)
         ocr_res = ocr2(img_bytes)

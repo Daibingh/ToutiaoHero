@@ -116,9 +116,9 @@ def ocr2(img_bytes):
 
 
 @run_time
-def screencap(dev='pc'):
+def screencap(dev='pc', serial=None):
     if dev == 'phone':
-        p = subprocess.Popen('adb -s 35826afb0704 shell screencap -p', stdout=subprocess.PIPE)
+        p = subprocess.Popen('adb -s {} shell screencap -p'.format(serial), stdout=subprocess.PIPE)
         b = p.stdout.read().replace(b'\r\n', b'\n')
     else:
         p = subprocess.Popen('adb shell screencap -p', stdout=subprocess.PIPE)
