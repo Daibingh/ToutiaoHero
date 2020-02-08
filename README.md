@@ -37,3 +37,4 @@
 	python toutiao_dev.py
 	```
 
+![](img/screenshot.png)
