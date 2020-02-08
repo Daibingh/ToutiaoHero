@@ -1,0 +1,5 @@
+__pycache__
+debug_images
+debug.log
+log.txt
+*.json
