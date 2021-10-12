@@ -1,7 +1,7 @@
 numpy==1.16.1
 baidu_aip==2.2.18.0
 pyscreenshot==0.6
-opencv_python==4.1.0.25
+opencv_python==4.2.0.32
 requests==2.18.4
 selenium==3.141.0
 jieba==0.39
