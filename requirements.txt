@@ -1,4 +1,4 @@
-numpy==1.16.1
+numpy==1.22.0
 baidu_aip==2.2.18.0
 pyscreenshot==0.6
 opencv_python==4.1.0.25
